@@ -1,0 +1,514 @@
+# Go to the RubyMTA directory
+cd ~/rubymta-gem
+
+#----------------------------------------
+
+# Create a log file directory
+sudo mkdir /var/log/rubymta
+sudo chmod 664 /var/log/rubymta
+sudo chown devel:devel /var/log/rubymta
+
+#----------------------------------------
+
+# Create a PID file
+sudo mkdir /run/rubymta
+sudo chmod 660 /run/rubymta
+sudo chown devel:devel /run/rubymta
+
+#----------------------------------------
+
+# To build the gem and install locally
+gem build rubymta.gemspec
+sudo gem uninstall rubymta
+sudo gem install rubymta
+
+# To start the server (in test mode and root)
+cd gmta
+sudo su
+export MODE=dev
+./gmta.rb
+
+#----------------------------------------
+
+#To run tests (with 'bacon' installed):
+# Configure spec/rubymta.rb
+# Be sure the RubyMTA is running
+bacon /home/devel/rubymta-gem/spec/rubymta.rb
+
+#----------------------------------------
+
+# To set globals in Git
+git config --global user.name "Michael J. Welch, Ph.D."
+git config --global user.email mjwelchphd@gmail.com
+git config --global core.editor xed
+git config --list
+
+#----------------------------------------
+
+# To push up to GitHub
+git remote add origin https://github.com/mjwelchphd/rubymta.git
+
+# UPDATE THE rubymta GEM SRC
+# CHANGE VERSION AND DATE 
+# UPDATE CHANGELOG
+# UPDATE README
+# BUILD THE GEM
+# UPDATE VERSION BELOW IN THE gem push COMMAND
+# COMMIT CHANGES IN GIT BEFORE PUSHING!
+git push -u origin master
+
+#----------------------------------------
+
+# To upload the gem to rubygems.org
+gem push rubymta-0.0.1.gem
+
+sudo gem install rubymta
+
+#----------------------------------------
+
+# To run 'irb' for testing
+cd ~/rubymta-gem
+irb -Ilib
+
+require_relative 'lib/rubymta'
+load './lib/rubymta.rb'
+
+
+
+
+
+
+#==========================================================================================
+
+require 'sequel'
+require 'sqlite3'
+S3DB = Sequel.connect("sqlite:///home/devel/test/rubymta-dev.db")
+S3DB[:parcels].each { |parcel| puts parcel.inspect }
+
+S3DB[:contacts].all
+S3DB[:parcels].columns
+
+S3DB["DELETE FROM parcels where id<99"].all
+
+S3DB[:parcels].where("retry_at<'#{Time.now}'").all
+
+parcels = S3DB[:parcels].where("retry_at<'#{Time.now}'").group(:mail_id,:to_url).all
+parcels.each { |parcel| puts parcel.inspect };nil
+
+
+
+# TODO!
+forward
+auto reply (vacation) ignore bounce error messages
+
+    local_parts = ^[.] : ^.*[@%!/|`#&?]
+    message = restricted characters in address
+
+    local_parts = ^[./|] : ^.*[@%!`#&?] : ^.*/\.\./
+    message = restricted characters in address
+
+router:
+  recipient is postmaster (covered above)
+  mail is forwarded
+  send/queue remote email
+  deliver to local
+
+
+
+
+
+
+require 'mysql2'
+require 'sequel'
+require 'yaml'
+
+host = YAML.load_file("./database.yml")[ENV['MODE']]
+DB = Sequel.connect(host)
+
+from = {
+  :value=>"<jamie@gmail.com>",
+  :accepted=>false,
+  :name=>"",
+  :url=>"jamie@gmail.com",
+  :local_part=>"jamie",
+  :domain=>"gmail.com",
+  :mx=>[
+    "alt2.gmail-smtp-in.l.google.com",
+    "alt3.gmail-smtp-in.l.google.com",
+    "alt4.gmail-smtp-in.l.google.com",
+    "gmail-smtp-in.l.google.com",
+    "alt1.gmail-smtp-in.l.google.com"
+  ],
+  :ip=>"74.125.192.26",
+  :live=>true,
+  :tzarmailclient=>false
+}
+
+rcpt = {
+    :value=>"<coco@tzarmail.com>",
+    :accepted=>false,
+    :name=>"",
+    :url=>"coco@tzarmail.com",
+    :local_part=>"coco",
+    :domain=>"tzarmail.com",
+    :mx=>[
+      "mail.tzarmail.com"
+    ],
+    :ip=>"23.253.107.107",
+    :live=>true,
+    :tzarmailclient=>true
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+rs = S3DB[:prohibitions].where(:ip=>'1.2.3.4').first
+
+S3DB[:prohibitions].all
+
+rs = S3DB[:prohibitions].where(:ip=>'1.2.3.4').first
+
+ProhibitedSeconds = 60
+rs = S3DB[:prohibitions].insert(:ip=>'1.2.3.4', :occurances=>0, :prohibited=>false, \
+      :expires_at=>Time.now+ProhibitedSeconds, :created_at=>Time.now, :updated_at=>Time.now) if rs.nil?
+
+#===========================================================
+  def prohibit
+    S3DB[:prohibitions].where(:ip=>'1.2.3.4').update(:prohibited=>true, \
+      :expires_at=>Time.now+ProhibitedSeconds, :updated_at=>Time.now)
+  end
+
+  def allow
+    S3DB[:prohibitions].where(:ip=>'1.2.3.4').delete
+  end
+
+  def prohibited?
+    S3DB[:prohibitions].where('expires_at<now()').delete
+    rs = S3DB[:prohibitions].where(:ip=>'1.2.3.4').first
+    if rs.nil?
+      id = S3DB[:prohibitions].insert(:ip=>'1.2.3.4', :occurances=>0, :prohibited=>false, \
+        :expires_at=>Time.now+ProhibitedSeconds, :created_at=>Time.now, :updated_at=>Time.now)
+      rs = S3DB[:prohibitions].where(:id=>id).first
+    end
+    return -1 if rs.prohibited
+    rs[:occurances] += 1
+    S3DB[:prohibitions].where(:ip=>'1.2.3.4').update(:occurances=>rs[:occurances])
+    return rs[:occurances]
+  end
+
+#===========================================================
+
+
+swaks -a PLAIN -tls -s mail.tzarmail.com:587 -t mike@czarmail.com -f admin@tzarmail.com --ehlo tzarmail.com < ../admin
+
+
+swaks -tls -s mail.tzarmail.com:25 -t mike@tzarmail.com -f admin@example.com --ehlo tzarmail.com
+
+
+swaks -a PLAIN -tls -s mail.tzarmail.com:25 -t coco@tzarmail.com,mike@tzarmail.com -f mjwelchphd@gmail.com --ehlo google.com < a
+
+
+swaks -tls -s mail.tzarmail.com:25 -t coco@tzarmail.com,mike@tzarmail.com -f mjwelchphd@gmail.com --ehlo google.com
+
+
+
+
+
+
+
+
+
+
+
+          if true # (rcpts[0][:delivery]==:remote) && (!mail[:mailfrom][:owner_id].nil?)
+            port = InternalSubmitPort
+          else
+            port = StandardMailPort
+          end
+
+puts "*56a* port=>#{port}"
+puts "*56c* port=>#{port}"
+
+
+          case rcpts[0][:delivery].inspect
+          when :local
+            ok = smtp_delivery(domain,port,mail,username=nil,password=nil)
+          when :remote
+            ok = smtp_delivery(domain,port,mail,username=nil,password=nil)
+          end
+
+
+id, tzarmail_id, attempts, delivery, sender, recipient, subject, status, response, created_at, updated_at, scheduled_at, delivered_at
+
+id, tzarmail_id, attempts, delivery, sender, recipient, status, created_at, updated_at, scheduled_at, delivered_at
+
+
+
+===== TEST FOR ITEM OF MAIL & BOUNCE =========
+require './item_of_mail'
+require 'pretty_inspect'
+
+mail= ItemOfMail.new({
+  :id=>"1cBbvR-1rFyjx-EB",
+  :time=>"Tue, 29 Nov 2016 06:29:57 +0000",
+  :local_port=>"2001",
+  :local_hostname=>"mail.tzarmail.com",
+  :remote_port=>"33724",
+  :remote_hostname=>"cpe-107-185-187-182.socal.res.rr.com",
+  :remote_ip=>"::ffff:107.185.187.182",
+  :prohibited=>false,
+  :encrypted=>true,
+  :authenticated=>nil,
+  :occurances=>0,
+  :ehlo=>{
+    :value=>" tzarmail.com",
+    :domain=>"tzarmail.com",
+    :ip=>"23.253.107.107"
+  },
+  :mailfrom=>{
+    :value=>"<admin@tzarmail.com>",
+    :accepted=>true,
+    :name=>"",
+    :url=>"admin@tzarmail.com",
+    :local_part=>"admin",
+    :domain=>"tzarmail.com",
+    :char_error=>false,
+    :mailbox_id=>2,
+    :owner_id=>1,
+    :delivery=>:local,
+    :mxs=>nil
+  },
+  :rcptto=>[
+    {
+      :accepted=>true,
+      :value=>"<coco@tzarmail.com>",
+      :name=>"",
+      :url=>"coco@tzarmail.com",
+      :local_part=>"coco",
+      :domain=>"tzarmail.com",
+      :char_error=>false,
+      :mailbox_id=>18,
+      :owner_id=>28,
+      :delivery=>:local,
+      :mxs=>nil,
+      :parcel_id=>29
+    },
+    {
+      :accepted=>true,
+      :value=>"<mjwelchphd@gmail.com>",
+      :name=>"",
+      :url=>"mjwelchphd@gmail.com",
+      :local_part=>"mjwelchphd",
+      :domain=>"gmail.com",
+      :char_error=>false,
+      :mailbox_id=>nil,
+      :owner_id=>nil,
+      :delivery=>:remote,
+      :mxs=>{
+        5=>[
+          [
+            "gmail-smtp-in.l.google.com",
+            "173.194.78.26"
+          ]
+        ],
+        10=>[
+          [
+            "alt1.gmail-smtp-in.l.google.com",
+            "173.194.219.27"
+          ]
+        ],
+        20=>[
+          [
+            "alt2.gmail-smtp-in.l.google.com",
+            "74.125.192.26"
+          ]
+        ],
+        30=>[
+          [
+            "alt3.gmail-smtp-in.l.google.com",
+            "74.125.141.26"
+          ]
+        ],
+        40=>[
+          [
+            "alt4.gmail-smtp-in.l.google.com",
+            "64.233.190.27"
+          ]
+        ]
+      },
+      :parcel_id=>30
+    }
+  ],
+  :data=>{
+    :accepted=>true,
+    :value=>nil,
+    :text=>[
+      "Date: Mon, 28 Nov 2016 22:29:57 -0800",
+      "To: coco@tzarmail.com,mjwelchphd@gmail.com",
+      "From: admin@tzarmail.com",
+      "Subject: test Mon, 28 Nov 2016 22:29:57 -0800",
+      "X-Mailer: swaks v20130209.0 jetmore.org/john/code/swaks/",
+      "",
+      "This is a test mailing",
+      ""
+    ],
+    :headers=>{
+      :date=>"Mon, 28 Nov 2016 22:29:57 -0800",
+      :to=>"coco@tzarmail.com,mjwelchphd@gmail.com",
+      :from=>"admin@tzarmail.com",
+      :subject=>"test Mon, 28 Nov 2016 22:29:57 -0800",
+      :x_mailer=>"swaks v20130209.0 jetmore.org/john/code/swaks/"
+    }
+  }
+})
+
+
+load './item_of_mail.rb'
+x = mail.bounce_mail(mail[:rcptto][1])
+puts x.pretty_inspect
+puts x[:data][:text].join("\n")
+
+
+
+
+create_table(:columns_types) do       # common database type used
+  Integer :a0                         # integer
+  String :a1                          # varchar(255)
+  String :a2, :size=>50               # varchar(50)
+  String :a3, :fixed=>true            # char(255)
+  String :a4, :fixed=>true, :size=>50 # char(50)
+  String :a5, :text=>true             # text
+  File :b                             # blob
+  Fixnum :c                           # integer
+  Bignum :d                           # bigint
+  Float :e                            # double precision
+  BigDecimal :f                       # numeric
+  BigDecimal :f2, :size=>10           # numeric(10)
+  BigDecimal :f3, :size=>[10, 2]      # numeric(10, 2)
+  Date :g                             # date
+  DateTime :h                         # timestamp
+  Time :i                             # timestamp
+  Time :i2, :only_time=>true          # time
+  Numeric :j                          # numeric
+  TrueClass :k                        # boolean
+  FalseClass :l                       # boolean
+end
+
+
+
+=begin
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `mailbox_id` int(11) NOT NULL,
+  `url` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
+  `occurances` int(4) NOT NULL,
+  `created_at` datetime NOT NULL,
+  `updated_at` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `by_url` (`mailbox_id`,`url`)
+=end
+
+
+:default	
+The default value for the column.
+
+:index	
+Create an index on this column. If given a hash, use the hash as the options for the index.
+
+:null	
+Mark the column as allowing NULL values (if true), or not allowing NULL values (if false). If unspecified, will default to whatever the database default is.
+
+:primary_key	
+Mark this column as the primary key. This is used instead of the primary key method if you want a non-autoincrementing primary key.
+
+:primary_key_constraint_name	
+The name to give the primary key constraint.
+
+:type	
+Overrides the type given as the method name or a separate argument. Not usually used by column itself, but often by other methods such as primary_key or foreign_key.
+
+:unique	
+Mark the column as unique, generally has the same effect as creating a unique index on the column.
+
+:unique_constraint_name	
+The name to give the unique key constraint.
+
+
+
+#*****************************
+#*** from extended_classes ***
+#*****************************
+
+ipv4 = "example.com".dig_a
+ipv6 = "example.com".dig_aaaa
+"example.com".dig_mx
+"key._domainkey.example.com".dig_dk
+"bcgdjftu.com".dig_a
+"bcgdjftu.com".dig_aaaa
+"bcgdjftu.com".dig_mx
+"crap._domainkey.example.com".dig_dk
+ipv4.dig_ptr
+ipv6.dig_ptr
+
+cm="example.com" # the domain from someone@example.com
+mx=cm.dig_mx # the mail server host for example.com
+ma=mx[0].dig_a # the IP of the mail server host
+ma.mta_live?(25) # "2..." if exists, and "4..." if not
+
+
+
+
+
+
+
+
+
+
+
+
+
+telnet tzarmail.com 2000
+
+ehlo example.com
+
+mail from:<mike@example.com>
+
+VFRY mike
+vfry mike
+
+expn crap@junk.com
+
+quit
+
+load '/home/devel/rubymta/lib/rubymta/connections.rb'
+
+
+c = Connections.new('3.4.5.12')
+
+c[:hits] += 1
+c.modify
+
+
+a = S3DB[:connections].all
+
+
+S3DB.run("delete from connections")
+
+
+
