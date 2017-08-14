@@ -64,7 +64,12 @@ class ItemOfMail < Hash
         parcel[:to_url] = rcptto[:url]
         parcel[:delivery_msg] = rcptto[:message]
         parcel[:retry_at] = nil
-        parcel[:delivery] = if rcptto[:accepted] then rcptto[:delivery].to_s else "none" end
+        if self[:accepted] && rcptto[:accepted]
+          parcel[:delivery] = rcptto[:delivery].to_s
+        else
+          parcel[:delivery] = 'none'
+          parcel[:delivery_at] = Time.now
+        end
         parcel[:created_at] = parcel[:updated_at] = Time.now.strftime("%Y-%m-%d %H:%M:%S")
         rcptto[:parcel_id] = S3DB[:parcels].insert(parcel)
       end

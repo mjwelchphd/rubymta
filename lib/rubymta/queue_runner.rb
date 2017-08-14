@@ -4,6 +4,8 @@ require 'openssl'
 require 'logger'
 require 'pdkim'
 
+LocalLMTPPort = 24
+
 def manually_run_queue_runner
   exit unless File::open(LockFilePath,"w").flock(File::LOCK_NB | File::LOCK_EX)
   QueueRunner.new.run_queue
@@ -51,7 +53,7 @@ class QueueRunner
       return ok, lines
     end
     rescue Timeout::Error => e
-      raise "Fix this in transporter.rb::recv_text rescue"
+      return '5', "500 5.0.0 No data received after #{QueueRunnerTimeout} seconds (Time Out)"
     end
   end
 
@@ -373,4 +375,63 @@ class QueueRunner
     end
   end
 
+  # to send an alert email to a registered user --
+  # this just delivers the message to dovecot with no processing --
+  # the caller is responsible to provide valid arguments
+  def send_local_email(from, to, subject, text)
+    @connection = nil
+
+    # open connection
+    ssl_socket = TCPSocket.open('localhost',LocalLMTPPort)
+    @connection = OpenSSL::SSL::SSLSocket.new(ssl_socket);
+
+    # receive the server's welcome message
+    ok, lines = recv_text
+    return ok, lines if ok!='2'
+
+    # send the LHLO
+    send_text("LHLO admin")
+    ok, lines = recv_text
+    return ok, lines if ok!='2'
+
+    # MAIL FROM
+    send_text("MAIL FROM:<#{from}>")
+    ok, lines = recv_text
+    return ok, lines if ok!='2'
+
+    # RCPT TO
+    send_text("RCPT TO:<#{to}>")
+    ok, lines = recv_text
+    return ok, lines if ok!='2'
+
+    # DATA -- send the email
+    send_text("DATA")
+    ok, lines = recv_text
+    return ok, lines if ok!='3'
+    lines = <<ALERT
+To: <#{to}>
+From: <#{from}>
+Subject: #{subject}
+Date: #{Time.now.strftime("%a, %d %b %Y %H:%M:%S %z")}
+
+#{text}
+ALERT
+    lines.split("\n").each do |line|
+      send_text(line, :data)
+    end
+
+    # send the end of the message prompt
+    send_text(".", :data)
+
+    # get the response from DoveCot
+    return recv_text
+
+  ensure
+    @connection.close if @connection
+  end
+
+end
+
+def send_local_alert(from, to, subject, text)
+  QueueRunner::new.send_local_email(from, to, subject, text)
 end

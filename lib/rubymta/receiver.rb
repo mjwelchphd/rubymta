@@ -181,6 +181,7 @@ class Receiver
     @done = false
     @encrypted = false
     @authenticated = false
+    @warning_given = false
     @mail[:encrypted] = false
     @mail[:authenticated] = nil
     send_text(connect_base)
@@ -190,10 +191,18 @@ class Receiver
       begin
         break if @done
         text = recv_text
-        if (text.nil?) # the  client closed the channel abruptly
+        # the  client closed the channel abruptly or we're forcing QUIT
+        if (text.nil?) || @warning_given
           text = "QUIT"
           @contact.violation
         end
+        # this handles an attempt to connect with HTTP
+        if text.start_with?("GET")
+          LOG.error(@mail[:mail_id]) {"An attempt was made to connect with a web browser"}
+          @mail[:saved] = true # prevent saving
+          raise Quit
+        end
+        # main command detect loop
         unrecognized = true
         Patterns.each do |pattern|
           break if pattern[0]>@level
@@ -249,9 +258,9 @@ class Receiver
     ok = nil
     File.open(LockFilePath,"w") do |f|
       ok = f.flock( File::LOCK_NB | File::LOCK_EX )
-      f.flock(File::LOCK_UN) if ok!=false
+      f.flock(File::LOCK_UN) if ok
     end
-    if ok!=false
+    if ok
       pid = Process::spawn("#{$app[:path]}/run_queue.rb")
       Process::detach(pid)
     end
@@ -275,6 +284,7 @@ class Receiver
 
     if @contact.warning?
       # this is the first denied message
+      @warning_given = true
       expires_at = @contact.violation.strftime('%Y-%m-%d %H:%M:%S %Z') # to kick it up to prohibited
       LOG.warn(@mail[:mail_id]) {"Access TEMPORARILY denied to #{@mail[:remote_ip]} (#{@mail[:remote_hostname]}) until #{expires_at}"}
       return "454 4.7.1 Access TEMPORARILY denied to #{@mail[:remote_ip]}: you may try again after #{expires_at}"
@@ -576,7 +586,7 @@ class Receiver
 
   def quit(value)
     @done = true
-    if @mail[:saved].nil?
+    if (@mail[:saved].nil?) && (@contact.violations? == 0)
       LOG.warn(@mail[:mail_id]) {"Quitting before a message is finished is considered a violation"}
       @contact.violation
     end
