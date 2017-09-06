@@ -69,7 +69,7 @@ git push -u origin master
 #----------------------------------------
 
 # To upload the gem to rubygems.org
-gem push rubymta-0.0.2.gem
+gem push rubymta-0.0.3.gem
 
 sudo gem install rubymta
 

@@ -170,12 +170,16 @@ class Receiver
 
   def receive(local_port, local_hostname, remote_port, remote_hostname, remote_ip)
     # Start a hash to collect the information gathered from the receive process
+    @contact = Contact::new(remote_ip)
     @mail = ItemOfMail::new
+    @mail[:contact_id] = @contact[:id]
     @mail[:local_port] = local_port
     @mail[:local_hostname] = local_hostname
     @mail[:remote_port] = remote_port
     @mail[:remote_hostname] = remote_hostname
     @mail[:remote_ip] = remote_ip
+    @mail[:saved] = true # prevent saving until we have at least a MAIL FROM
+    LOG.info(@mail[:mail_id]) {"New item of mail opened with id '#{@mail[:mail_id]}'"}
 
     # start the main receiving process here
     @done = false
@@ -271,11 +275,6 @@ class Receiver
 #-------------------------------------------------------#
 
   def connect_base
-    @contact = Contact.new(@mail[:remote_ip])
-    raise StandardError.new("contact.new failed; see log") if @contact.nil?
-
-    LOG.info(@mail[:mail_id]) {"New item of mail opened with id '#{@mail[:mail_id]}'"}
-
     if @contact.prohibited?
       # after the first denied message, we just slam the channel shut: no more nice guy
       LOG.warn(@mail[:mail_id]) {"Slammed connection shut. No more nice guy with #{@mail[:remote_ip]}"}
@@ -340,6 +339,7 @@ class Receiver
   def mail_from_base(value)
     @mail[:mailfrom] = from = {}
     @mail[:rcptto] = []
+    @mail[:saved] = false # enable saving
     from[:accepted] = false
     ok = psych_value(from, value)
 

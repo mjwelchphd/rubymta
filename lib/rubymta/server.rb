@@ -73,6 +73,7 @@ end
 # queue runner will read this queue and attempt to deliver the emails.
 S3DB::create_table?(:parcels) do
   primary_key(:id)
+  integer(:contact_id)
   string(:mail_id)
   string(:from_url)
   string(:to_url)

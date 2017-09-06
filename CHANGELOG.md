@@ -1,3 +1,8 @@
+# v0.0.3
+
+* Added a `contact_id` firld to the `parcels` table so that the parcels can be related back to the IP that sent them, irrespective of the domain names presented. The contact IP is an absolute quantity, and one of the first ones we get, so it forms the cornerstone of the data structure.
+
+
 # v0.0.2
 
 * Added code to make sure RubyMTA quits on the next command after a violations warning is given.

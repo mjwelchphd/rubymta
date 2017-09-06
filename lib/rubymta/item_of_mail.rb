@@ -59,6 +59,7 @@ class ItemOfMail < Hash
         # make entries into the database for tracking the deliveries
         parcel = {}
         parcel[:id] = nil
+        parcel[:contact_id] = self[:contact_id]
         parcel[:mail_id] = self[:mail_id]
         parcel[:from_url] = self[:mailfrom][:url]
         parcel[:to_url] = rcptto[:url]
