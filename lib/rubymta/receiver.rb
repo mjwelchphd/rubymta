@@ -246,7 +246,7 @@ class Receiver
   ensure
     # make sure the incoming email is saved, in case there was a receive error;
     # otherwise, it gets saved just before the "250 OK" in the DATA section
-    if !@mail[:saved]
+    if @mail && !@mail[:saved]
       LOG.error(@mail[:mail_id]) {"#{@mail[:mail_id]} was not received completely. Saving the partial copy to queue."}
 
       # the email is faulty--save for reference

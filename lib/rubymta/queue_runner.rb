@@ -64,7 +64,7 @@ class QueueRunner
     while true
       # sqlite3 has a bug: "<=" doesn't work with time, ex. "retry_at<='#{Time.now}'"
       # we have to add 1 second and use "<"; ex. "retry_at<'#{Time.now+1}'"
-      parcels = S3DB[:parcels].where("(delivery<>'none') and (delivery_at is null) and ((retry_at is null) or (retry_at<'#{Time.now + 1}'))").all
+      parcels = S3DB[:parcels].where(Sequel.lit("(delivery<>'none') and (delivery_at is null) and ((retry_at is null) or (retry_at<'#{Time.now + 1}'))")).all
       return if parcels.empty?
 
       # aggregate the emails by destination domain

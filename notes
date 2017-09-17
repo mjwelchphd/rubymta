@@ -94,10 +94,12 @@ gem build rubymta.gemspec; sudo gem uninstall rubymta; sudo gem install rubymta
 
 require 'sequel'
 require 'sqlite3'
-S3DB = Sequel.connect("sqlite:///home/devel/test/rubymta-dev.db")
+S3DB = Sequel.connect("sqlite:///home/czar-devel/czar-mta/rubymta-dev.db")
+Sequel.split_symbols = true
+
 S3DB[:parcels].each { |parcel| puts parcel.inspect }
 
-S3DB[:contacts].all
+S3DB[:contacts].select(:contacts__id).first
 S3DB[:parcels].columns
 
 S3DB["DELETE FROM parcels where id<99"].all

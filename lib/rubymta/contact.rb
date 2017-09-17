@@ -2,7 +2,7 @@ class Contact < Hash
 
   def initialize(remote_ip)
     # Reset timed-out records
-    S3DB[:contacts].where("expires_at<'#{Time.now.strftime("%Y-%m-%d %H:%M")}'").update(:violations=>0)
+    S3DB[:contacts].where(Sequel.lit("expires_at<'#{Time.now.strftime("%Y-%m-%d %H:%M")}'")).update(:violations=>0)
 
     # See if it's already there
     rs = S3DB[:contacts].where(:remote_ip=>remote_ip).first

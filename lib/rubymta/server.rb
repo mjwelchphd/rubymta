@@ -48,6 +48,11 @@ if !UserName.nil?
   File::chown($app[:uinfo].uid, $app[:ginfo].gid, S3DBPath)
 end
 
+# This changed as of Sequel v.4.40.0
+# This is false by default, but was supposed to be
+# true by default so we have to forcefully set it
+Sequel.split_symbols = true
+
 # Open the sqlite3 database for rubymta use
 S3DB = Sequel.connect("sqlite://#{S3DBPath}")
 LOG.info("Database '#{S3DBPath}' opened")
