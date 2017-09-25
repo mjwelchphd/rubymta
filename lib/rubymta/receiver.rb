@@ -361,20 +361,25 @@ class Receiver
     # Also, members MUST use use authenticated email on the SubmissionPort to
     # submit mail; non-members MUST use non-authenticated email on the
     # StandardMailPort to submit mail
-    if (from[:mailbox_id]) && (@mail[:local_port]!=InternalSubmitPort)
-      # traffic is from our member
-      return "556 5.7.27 #{ServerTitle} members must use port #{SubmissionPort} to send mail" \
-        if @mail[:local_port]!=SubmissionPort
+    case @mail[:local_port]
+    when StandardMailPort   # '25'--non client must come in here
+      return "556 5.7.27 #{ServerTitle} members must use port #{InternalSubmitPort} or #{SubmissionPort} to send mail" \
+        if from[:mailbox_id]
+    when InternalSubmitPort # '465'-- client, internal use only, block external use with iptables
+      return "556 5.7.27 Non #{ServerTitle} members must use port #{StandardMailPort} to send mail" \
+        if !from[:mailbox_id]
+    when SubmissionPort     # '587'--client, external or internal req. auth & enc
+      return "556 5.7.27 Non #{ServerTitle} members must use port #{StandardMailPort} to send mail" \
+        if !from[:mailbox_id]
       return "556 5.7.27 Traffic on port #{SubmissionPort} must be authenticated (i.e., #{ServerTitle} client)" \
         if !@mail[:authenticated]
       return "556 5.7.27 Traffic on port #{SubmissionPort} must be encrypted" \
         if !@mail[:encrypted]
-    else
-      # traffic is from a non-member
-      return "556 5.7.27 Non #{ServerTitle} members must use port #{StandardMailPort} to send mail" \
-        if !from[:mailbox_id] && @mail[:local_port]!=StandardMailPort
     end
 
+    # use the mail_from(value) method in the configuration file to add
+    # more rules for filtering senders; psych_value will determine if
+    # the sender is a member, if you have a 'client_lookup(url)', as mentioned above
     if respond_to?(:mail_from)
       msg = mail_from(value)
       return msg if !msg.nil?
