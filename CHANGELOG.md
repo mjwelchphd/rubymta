@@ -1,3 +1,8 @@
+# v0.0.5
+
+* Changed the code that enforces the rule that: external non-member mail has to come in on port 25; external member mail has to come in on port 587; and internal mail can come in on port 465. Port 465 is open, i.e., requires no authentication nor encryption. (You should use iptables to be sure port 465 is not open to the Internet.
+
+
 # v0.0.4
 
 * Updated the gem to reflect changes in Ruby Sequel v4.40.0.
