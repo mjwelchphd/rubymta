@@ -1,3 +1,8 @@
+# v0.0.6
+
+* Replaced a call to a legacy method 'add_block' to the proper method 'violation'. This bug only activated if the sender slammed the connection shut during the data block transfer.
+* Fixed a bug causing a run-time error when the sender sent an email, and slammed the connection shut after issuing the DATA command.
+
 # v0.0.5
 
 * Changed the code that enforces the rule that: external non-member mail has to come in on port 25; external member mail has to come in on port 587; and internal mail can come in on port 465. Port 465 is open, i.e., requires no authentication nor encryption. (You should use iptables to be sure port 465 is not open to the Internet.

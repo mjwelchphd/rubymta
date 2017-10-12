@@ -440,7 +440,7 @@ class Receiver
     while true
       text = recv_text(ShowIncomingData)
       if text.nil? # the  client closed the channel abruptly
-        @mail.add_block(nil, 5)
+        @contact.violation
         break
       end
       break if text=="."

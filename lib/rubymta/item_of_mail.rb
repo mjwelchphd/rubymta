@@ -40,7 +40,7 @@ class ItemOfMail < Hash
         break
       when !header.empty?
         keyword, value = header.split(":", 2)
-        self[:data][:headers][keyword.downcase.gsub("-","_").to_sym] = value.strip
+        self[:data][:headers][keyword.downcase.gsub("-","_").to_sym] = value.strip if !value.nil?
         header = String::new(line)
       else
         header = String::new(line)
