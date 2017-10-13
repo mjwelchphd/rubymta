@@ -267,6 +267,7 @@ class Receiver
     if ok
       pid = Process::spawn("#{$app[:path]}/run_queue.rb")
       Process::detach(pid)
+      LOG.info(@mail[:mail_id]) {"Spawned run_queue.rb, pwd=#{`pwd`}, path=>#{$app[:path]}, pid=>#{pid.inspect}"}
     end
   end
 
@@ -608,7 +609,7 @@ class Receiver
       return msg if !msg.nil?
     end
 
-    return "504 5.7.4 authentication mechanism not supported"
+    return "504 5.7.4 authentication mechanism not supported; use TLS and PLAIN"
   end
 
   # These are not overrideable
@@ -616,9 +617,13 @@ class Receiver
   def starttls(value)
     send_text("220 2.0.0 TLS go ahead")
     LOG.info(@mail[:mail_id]) {"<-> (handshake)"} if LogReceiverConversation
-    @connection.accept
-    @encrypted = true
-    @mail[:encrypted] = true
+    begin
+      @connection.accept
+      @encrypted = true
+      @mail[:encrypted] = true
+    rescue => e
+      LOG.error(@mail[:mail_id]) {e.inspect}
+    end
     return nil
   end
 

@@ -1,3 +1,10 @@
+# v0.0.7
+
+* In `Receiver#starttls`  I added a `begin` block to catch errors I believe are caused by spammers sending random data as a certificate. It's open at this moment, `rescue => e`, but as soon as I discover what the spammers are doing, I'll tighten this up by specifying the proper exception.
+* I modified the "authentication mechanism not supported" message to add "use TLS and PLAIN." The LOGIN authentication will be added eventually, but it has been replaced by TLS+PLAIN in practice. The EHLO response specifies that only PLAIN is accepted, so if a sender uses LOGIN, it's not a commercial server, but a spammer.
+* The README.md was updated with the app I use to drive queue_runner.
+
+
 # v0.0.6
 
 * Replaced a call to a legacy method 'add_block' to the proper method 'violation'. This bug only activated if the sender slammed the connection shut during the data block transfer.

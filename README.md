@@ -60,6 +60,51 @@ I use Linux Mint, but any linux will work. I don't use Windows, so if you want t
 * It can deliver locally via LMTP (for Dovecot) or remotely via a remote server.
 * You can program your own app to use `queue_runner` or write your own queue runner.
 
+The little app I use to run the queue manually (or with crontab) looks like this:
+
+```ruby
+#! /usr/bin/ruby
+
+# Set up the $app hash for systemwide parameters
+$app = {}
+$app[:path] = Dir::pwd
+$app[:mode] = ENV['MODE']
+
+require 'sequel'
+require 'sqlite3'
+require 'rubymta/queue_runner'
+require 'rubymta/item_of_mail'
+
+# Make sure the MODE environmental variable is valid
+if ['dev','live'].index(ENV['MODE']).nil?
+  msg = "Environmental variable MODE not set properly--must be dev or live"
+  LOG.fatal(msg)
+  puts msg
+  exit(1)
+end
+
+require_relative 'config'
+include Config
+
+# get setup and open the log
+LOG = Logger::new(LogPathAndFile, LogFileLife)
+LOG.formatter = proc do |severity, datetime, progname, msg|
+  pname = if progname then '('+progname+') ' else nil end
+  "#{datetime.strftime("%Y-%m-%d %H:%M:%S")} [#{severity}] #{pname}#{msg}\n"
+end
+
+# This changed as of Sequel v.4.40.0
+# This is false by default, but was supposed to be
+# true by default so we have to forcefully set it
+Sequel.split_symbols = true
+
+# Open the sqlite3 database for rubymta use
+S3DB = Sequel.connect("sqlite://#{S3DBPath}")
+LOG.info("Database '#{S3DBPath}' opened")
+
+manually_run_queue_runner
+```
+
 ### TODO!
 
 * The queue runner is a very basic class. Bounce and forwarding need to be implemented. Since I add a rule to reject relays in my server, bounce messages only need to be delivered locally with LMTP. In a relaying server, bounce messages may be sent back to a remote sender; if that address is spoofed, and it turns out to be a trap address, your server will get blacklisted. Hence the rule: I don't relay. There is an example rule in the demo configuration which implements a "no relay" error message, and now you know why email admins don't allow relays anymore.
