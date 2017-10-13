@@ -1,3 +1,8 @@
+# v0.0.8
+
+* No changes. I didn't properly rebuild the gem in v0.0.7.
+
+
 # v0.0.7
 
 * In `Receiver#starttls`  I added a `begin` block to catch errors I believe are caused by spammers sending random data as a certificate. It's open at this moment, `rescue => e`, but as soon as I discover what the spammers are doing, I'll tighten this up by specifying the proper exception.
@@ -9,6 +14,7 @@
 
 * Replaced a call to a legacy method 'add_block' to the proper method 'violation'. This bug only activated if the sender slammed the connection shut during the data block transfer.
 * Fixed a bug causing a run-time error when the sender sent an email, and slammed the connection shut after issuing the DATA command.
+
 
 # v0.0.5
 
