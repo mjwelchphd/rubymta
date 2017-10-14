@@ -1,3 +1,8 @@
+# v0.0.9
+* Added a `rescue OpenSSL::SSL::SSLError` to catch sender certificate violations.
+* Added a `LogLevel` into the Config file (config.rb) to control the logger output. I use LOGGER::INFO as my default.
+* Changed the log message that the SqLite3 database is open to a `debug` level.
+
 # v0.0.8
 
 * No changes. I didn't properly rebuild the gem in v0.0.7.

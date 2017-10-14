@@ -623,6 +623,8 @@ class Receiver
       @mail[:encrypted] = true
     rescue => e
       LOG.error(@mail[:mail_id]) {e.inspect}
+    rescue OpenSSL::SSL::SSLError => e
+      LOG.error(@mail[:mail_id]) {e.to_s}
     end
     return nil
   end

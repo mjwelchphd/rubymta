@@ -25,6 +25,7 @@ require_relative 'receiver'
 
 # get setup and open the log
 LOG = Logger::new(LogPathAndFile, LogFileLife)
+LOG.level = LogLevel
 LOG.formatter = proc do |severity, datetime, progname, msg|
   pname = if progname then '('+progname+') ' else nil end
   "#{datetime.strftime("%Y-%m-%d %H:%M:%S")} [#{severity}] #{pname}#{msg}\n"
@@ -55,7 +56,7 @@ Sequel.split_symbols = true
 
 # Open the sqlite3 database for rubymta use
 S3DB = Sequel.connect("sqlite://#{S3DBPath}")
-LOG.info("Database '#{S3DBPath}' opened")
+LOG.debug("Database '#{S3DBPath}' opened")
 
 # Create the tables we need if they don't already exist
 

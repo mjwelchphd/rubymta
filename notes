@@ -63,14 +63,16 @@ git remote add origin https://github.com/mjwelchphd/rubymta.git
 # UPDATE README
 # BUILD AND TEST THE GEM
 # UPDATE VERSION BELOW IN THE gem push COMMAND
-# BE SURE TO SAVE ALL FILES (like NOTES)
-# COMMIT CHANGES IN GIT BEFORE PUSHING!
+#****************************************
+# PAY ATTENTION HERE:
+# BE SURE TO SAVE ALL FILES (like NOTES) #<------------- DON'T FORGET!
+# COMMIT CHANGES IN GIT BEFORE PUSHING!  #<------------- DON'T FORGET!
 git push -u origin master
 
 #----------------------------------------
 
 # To upload the gem to rubygems.org
-gem push rubymta-0.0.8.gem
+gem push rubymta-0.0.9.gem
 
 sudo gem install rubymta
 
