@@ -60,6 +60,8 @@ class Contact < Hash
       if prohibited?
         self[:locks] += 1
         self[:expires_at] = Time.now + ProhibitedSeconds
+        modify
+        raise Quit # force quit: some senders try to keep going
       end
       modify
     end

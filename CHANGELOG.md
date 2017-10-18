@@ -1,3 +1,19 @@
+# v0.0.10
+
+#### Warning: This version changes the queue file format. Previous queue files will *not* be compatible with this version.
+
+* Added a test for valid UTF-8 encoding. On a 777 character Greek text, a `valid_encoding?` takes only in 3.6ns, so checking every line of text is not expensive.
+* Revised the way emails are stored on disk: the main structure has the mail[:data][:text] removed and stored following the main structure. The reason for this change is that `eval` doesn't handle foreign UTF-8 character sequences well.
+	- *__New Disk Format in `queue`:__*
+	- Number of lines in main mail structure;
+	- Main mail structure;
+	- Unmodified text; this is added back to the main structure at `mail[:data][:text]` after the queue file is read.
+* Added a Quit at the moment the connecting IP is placed under prohibition. The reason for this is that some senders don't stop sending when they receive a 500+ level message.
+* If there is a `parcel` record, but no matching disk file, the parcel record is marked as delivery='none'. This prevents the QueueRunner from looping when an undelivered queue file is manually deleted.
+* Added checks at the end of delivery in QueueRunner to test for the message level (should be 200+ if accepted).
+* Added another check for the client abruptly closing the connection.
+* Added '=' to the list of acceptable characters in a local part of an email address.
+
 # v0.0.9
 * Added a `rescue OpenSSL::SSL::SSLError` to catch sender certificate violations.
 * Added a `LogLevel` into the Config file (config.rb) to control the logger output. I use LOGGER::INFO as my default.

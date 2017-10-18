@@ -26,6 +26,10 @@ gem build rubymta.gemspec
 sudo gem uninstall rubymta
 sudo gem install rubymta
 
+
+gem build rubymta.gemspec; sudo gem uninstall rubymta; sudo gem install rubymta
+
+
 # To start the server (in test mode and root)
 cd ~/czar-mta
 sudo su
@@ -97,7 +101,7 @@ gem build rubymta.gemspec; sudo gem uninstall rubymta; sudo gem install rubymta
 
 require 'sequel'
 require 'sqlite3'
-S3DB = Sequel.connect("sqlite:///home/czar-devel/czar-mta/rubymta-dev.db")
+S3DB = Sequel.connect("sqlite:///home/czar-admin/czar-mta/rubymta-live.db")
 Sequel.split_symbols = true
 
 S3DB[:parcels].each { |parcel| puts parcel.inspect }

@@ -65,6 +65,7 @@ class QueueRunner
       # sqlite3 has a bug: "<=" doesn't work with time, ex. "retry_at<='#{Time.now}'"
       # we have to add 1 second and use "<"; ex. "retry_at<'#{Time.now+1}'"
       parcels = S3DB[:parcels].where(Sequel.lit("(delivery<>'none') and (delivery_at is null) and ((retry_at is null) or (retry_at<'#{Time.now + 1}'))")).all
+
       return if parcels.empty?
 
       # aggregate the emails by destination domain
@@ -81,21 +82,17 @@ class QueueRunner
       # handled in the respective mail routine
       mail = {}
       deliver.each do |mail_id, domains|
-        (mail = ItemOfMail::retrieve_mail_from_queue_folder(mail_id)) if mail[:mail_id]!=mail_id
+        (mail = ItemOfMail::retrieve_mail_from_queue_folder(mail_id)) if mail && mail[:mail_id]!=mail_id
+
+        if mail.nil?
+          LOG.info(Time.now.strftime("%Y-%m-%d %H:%M:%S")) {"Skipping mail #{mail_id} because there's no associated queue file"}
+          next
+        end
+
         domains.each do |domain, parcels|
-
-#=== compare before and after ======================================
-#puts "--> *2* domain=>#{domain.inspect}"
-#parcels.values.each { |parcel| puts "--> *3* #{parcel.inspect}" }
-#===================================================================
-
           @mail_id = mail[:mail_id]
           deliver_and_save_status(mail, domain, parcels.values)
           @mail_id = nil
-
-#===================================================================
-#parcels.values.each { |parcel| puts "--> *4* #{parcel.inspect}" }
-#===================================================================
         end
       end
       if (n-=1)<0
@@ -289,7 +286,13 @@ class QueueRunner
 
     # get one final message for all parcels (recipients)
     ok, lines = recv_text
-    return mark_parcels(parcels, lines)
+    if ok=='2'
+      ret = mark_parcels(parcels, lines)
+      LOG.info(@mail_id) {"Mail for #{parcels[0][:to_url]}, et.al. delivered remotely"}
+    else
+      LOG.info(@mail_id) {"Mail for #{parcels[0][:to_url]}, et.al. failed delivery remotely, #{lines.last}"}
+    end
+    return ret
   end
 
 # SAMPLE LMTP TRANSFER
@@ -371,7 +374,13 @@ class QueueRunner
     parcels.each do |parcel|
       # get the response from DoveCot
       ok, lines = recv_text
-      mark_parcels([parcel], lines)
+      if ok=='2'
+        ret = mark_parcels([parcel], lines)
+        LOG.info(@mail_id) {"Mail for #{parcel[:to_url]} delivered locally"}
+      else
+        LOG.info(@mail_id) {"Mail for #{parcel[:to_url]} failed delivery locally, #{lines.last}"}
+      end
+      return ret
     end
   end
 

@@ -76,9 +76,14 @@ class Receiver
       Timeout.timeout(ReceiverTimeout) do
         begin
           temp = @connection.gets
-          if temp.nil?
+          case
+          when temp.nil?
             LOG.warn(@mail[:mail_id]) {"The client abruptly closed the connection"}
             text = nil
+          when !temp.valid_encoding?
+            LOG.warn(@mail[:mail_id]) {"The client sent non-UTF-8 text"}
+            send_text("500 5.5.1 non-UTF-8 text detected")
+            raise Quit
           else
             text = temp.chomp
           end
@@ -138,7 +143,7 @@ class Receiver
 #    Character . provided that it is not the first or last character,
 #     and provided also that it does not appear two or more times consecutively.
     part[:dot_error] = true if (local_part[0]=='.' || local_part[-1]=='.' || local_part.index('..'))
-    m = local_part.match(/^[a-zA-Z0-9\!\#\$%&'*+-\/?^_`{|}~]+$/)
+    m = local_part.match(/^[a-zA-Z0-9\!\#\$%&'*+-\/?^_`{|}~=]+$/)
     part[:char_error] = m.nil?
 
     # lookup the email to see if it's one of ours
@@ -352,7 +357,7 @@ class Receiver
            "550 5.1.7 beginning or ending '.' or 2 or more '.'s in a row" \
       if from[:dot_error]
     return "550-5.1.7 #{from[:local_part].inspect} can only", \
-           "550 5.1.7 contain a-z, A_Z, 0-9, and !#\$%&'*+-/?^_`{|}~." \
+           "550 5.1.7 contain a-z, A_Z, 0-9, and !#\$%&'*+-/?^_`{|}~.=" \
       if from[:char_error]
 
     LOG.info(@mail[:mail_id]) {"Receiving mail from sender #{from[:url]}"}

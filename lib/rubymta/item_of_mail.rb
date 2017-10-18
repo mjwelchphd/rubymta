@@ -87,13 +87,19 @@ class ItemOfMail < Hash
   end
 
   def save_mail_into_queue_folder
+    # split the ItemOfMail into a hash and a text (which may contain any UTF-8)
+    hash = self.dup
+    text = hash[:data].delete(:text)
     begin
-      # save the mail in the Queue folder
+      # save the mail into the Queue folder
       File::open("#{MailQueue}/#{self[:mail_id]}","w") do |f|
-        self[:saved] = true
-        f.write(self.pretty_inspect)
+        tmp = hash.pretty_inspect
+        f.write("#{tmp.lines.count}\n")
+        f.write(tmp)
+        f.write("\n")
+        f.write(text.join("\n"))
       end
-      return true
+      self[:saved] = true
     rescue => e
       LOG.error(self[:mail_id]) {e.to_s}
       e.backtrace.each { |line| LOG.error(self[:mail_id]) {line} }
@@ -104,14 +110,33 @@ class ItemOfMail < Hash
   def self::retrieve_mail_from_queue_folder(mail_id)
     item = nil
     begin
-      mail = nil
-      File::open("#{MailQueue}/#{mail_id}","r") do |f|
-        mail = eval(f.read)
-        item = ItemOfMail::new(mail)
+      # Make sure the file that matches the parcel record exists
+      if !File::exist?("#{MailQueue}/#{mail_id}")
+        # file missing: mark the parcels none and date them
+        parcels = S3DB[:parcels].where(:mail_id=>mail_id).all
+        parcels.each do |parcel|
+          S3DB[:parcels].where(:id=>parcel[:id]).update(:delivery=>'none', :delivery_at=>Time.now)
+        end
+        return nil
       end
+
+      tmp = nil; File::open("#{MailQueue}/#{mail_id}","r") { |f| tmp = f.read }
+      data = tmp.split("\n")
+
+      # get the number of lines in the hash, and cut that out first
+      n = data[0].to_i
+      a = data[1..n]
+      b = data[n+1..-1]
+
+      # convert the hash
+      mail = eval(a.join("\n"))
+
+      # create the ItemOfMail structure and insert the text
+      item = ItemOfMail::new(mail)
+      item[:data][:text] = b
     rescue => e
-      LOG.error(self[:mail_id]) {e.to_s}
-      e.backtrace.each { |line| LOG.error(self[:mail_id]) {line} }
+      LOG.error(mail_id) {e.to_s}
+      e.backtrace.each { |line| LOG.error(mail_id) {line} }
     end
     return item
   end
