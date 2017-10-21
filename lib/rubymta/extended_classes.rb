@@ -145,9 +145,9 @@ class String
       end
       return "250 #{welcome.chomp[4..-1]}"
     rescue SocketError => e
-      return "421 Service not available (#{e.to_s})"
+      return "421 Service not available (#{e})"
     rescue Timeout::Error => e
-      return "421 Service not available (#{e.to_s})"
+      return "421 Service not available (#{e})"
     end
   end
 

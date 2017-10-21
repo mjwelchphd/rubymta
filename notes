@@ -76,7 +76,7 @@ git push -u origin master
 #----------------------------------------
 
 # To upload the gem to rubygems.org
-gem push rubymta-0.0.10.gem
+gem push rubymta-0.0.11.gem
 
 sudo gem install rubymta
 
@@ -503,45 +503,4 @@ cm="example.com" # the domain from someone@example.com
 mx=cm.dig_mx # the mail server host for example.com
 ma=mx[0].dig_a # the IP of the mail server host
 ma.mta_live?(25) # "2..." if exists, and "4..." if not
-
-
-
-
-
-
-
-
-
-
-
-
-
-telnet czarmail.com 2000
-
-ehlo example.com
-
-mail from:<mike@example.com>
-
-VFRY mike
-vfry mike
-
-expn crap@junk.com
-
-quit
-
-load '/home/devel/rubymta/lib/rubymta/connections.rb'
-
-
-c = Connections.new('3.4.5.12')
-
-c[:hits] += 1
-c.modify
-
-
-a = S3DB[:connections].all
-
-
-S3DB.run("delete from connections")
-
-
 

@@ -148,11 +148,6 @@ class Server
   # argument passed to it -- it can be '<ipv6>/<port>', '<ipv4>:<port>', or just '<port>'
   def listening_thread(local_port)
     LOG.info("%06d"%Process::pid) {"listening on port #{local_port}..."}
-
-    # establish an SSL context
-    $ctx = OpenSSL::SSL::SSLContext.new
-    $ctx.key = $prv
-    $ctx.cert = $crt
     
     # check the parameter to see if it's valid
     m = /^(([0-9a-fA-F]{0,4}:{0,1}){1,8})\/([0-9]{1,5})|(([0-9]{1,3}\.{0,1}){4}):([0-9]{1,5})|([0-9]{1,5})$/.match(local_port)
@@ -241,6 +236,11 @@ class Server
     # we do this before daemonizing because the working folder might change
     $prv = if PrivateKey then OpenSSL::PKey::RSA.new File.read(PrivateKey) else nil end
     $crt = if Certificate then OpenSSL::X509::Certificate.new File.read(Certificate) else nil end
+
+    # establish an SSL context for use in `listening_thread`
+    $ctx = OpenSSL::SSL::SSLContext.new
+    $ctx.key = $prv
+    $ctx.cert = $crt
 
     # daemonize it if the option was set--it doesn't have to be root to daemonize it
     Process::daemon if @options.daemonize

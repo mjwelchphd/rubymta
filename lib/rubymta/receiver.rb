@@ -60,10 +60,10 @@ class Receiver
         return text[0]
       end
     rescue Errno::EPIPE => e
-      LOG.error(@mail[:mail_id]) {"#{e.to_s}#{Unexpectedly}"}
+      LOG.error(@mail[:mail_id]) {"#{e}#{Unexpectedly}"}
       raise Quit
     rescue Errno::EIO => e
-      LOG.error(@mail[:mail_id]) {"#{e.to_s}#{Unexpectedly}"}
+      LOG.error(@mail[:mail_id]) {"#{e}#{Unexpectedly}"}
       raise Quit
     end
   end
@@ -97,7 +97,7 @@ class Receiver
         return text
       end
     rescue Errno::EIO => e
-      LOG.error(@mail[:mail_id]) {"#{e.to_s}#{Unexpectedly}"}
+      LOG.error(@mail[:mail_id]) {"#{e}#{Unexpectedly}"}
       raise Quit
     rescue Timeout::Error => e
       LOG.info(@mail[:mail_id]) {" -> <eod>"} if LogReceiverConversation
@@ -235,13 +235,10 @@ class Receiver
           @contact.violation
           send_text(response)
         end
-      rescue =>e #OpenSSL::SSL::SSLError => e
-        LOG.error(@mail[:mail_id]) {"SSL error: #{e.to_s}"}
-        e.backtrace.each { |line| LOG.error(@mail[:mail_id]) {line} }
-        @done = true
       end until @done
+
     rescue => e
-      LOG.fatal(@mail[:mail_id]) {e.to_s}
+      LOG.fatal(@mail[:mail_id]) {e.inspect}
       exit(1)
     end
 
@@ -272,7 +269,7 @@ class Receiver
     if ok
       pid = Process::spawn("#{$app[:path]}/run_queue.rb")
       Process::detach(pid)
-      LOG.info(@mail[:mail_id]) {"Spawned run_queue.rb, pwd=#{`pwd`}, path=>#{$app[:path]}, pid=>#{pid.inspect}"}
+      LOG.info(@mail[:mail_id]) {"Spawned run_queue.rb, pwd=#{`pwd`.chomp}, path=>#{$app[:path]}, pid=>#{pid.inspect}"}
     end
   end
 
@@ -622,14 +619,16 @@ class Receiver
   def starttls(value)
     send_text("220 2.0.0 TLS go ahead")
     LOG.info(@mail[:mail_id]) {"<-> (handshake)"} if LogReceiverConversation
+    conn = @connection.clone # save the unencrypted connection in case of error
     begin
       @connection.accept
-      @encrypted = true
-      @mail[:encrypted] = true
-    rescue => e
-      LOG.error(@mail[:mail_id]) {e.inspect}
+      @mail[:encrypted] = @encrypted = true
     rescue OpenSSL::SSL::SSLError => e
-      LOG.error(@mail[:mail_id]) {e.to_s}
+      # STARTTLS failed: restore the unencrypted connection
+      LOG.error(@mail[:mail_id]) {"Error during STARTTLS: #{e}"}
+      @connection = conn # restore original
+      @mail[:encrypted] = @encrypted = false
+      return "500 5.0.0 STARTTLS failed: #{e}"
     end
     return nil
   end

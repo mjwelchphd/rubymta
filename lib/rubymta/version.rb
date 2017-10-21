@@ -1,5 +1,5 @@
 module Version
-  VERSION = "0.0.10"
-  MODIFIED = "2017-10-18"
+  VERSION = "0.0.11"
+  MODIFIED = "2017-10-21"
 end
 

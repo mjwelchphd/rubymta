@@ -1,3 +1,10 @@
+# v0.0.11
+
+* Changed the STARTTLS to return a 500 error and continue processing. Before this change, it just erred out and closed the port with no feedback to the client. Because this error returns a 500 level error, the client is (ideally) expected to quit or restart the attempt from the beginning (at EHLO).
+* if `e` is in a string like so: `"... #{e} ..."`, it doesn't require a `.to_s` because `#{}` does a `.to_s`. Changed all non-conforming strings to conform to this rule. Exception: where `e` is found in `rescue => e`, it takes the form `"... #{e.inspect} ..."` so that the actual error class will be displayed (so you'll know what specific rescue may be added).
+* moved the initialization code for $ctx out of the `listening_thread` because it only needs to be set once, not for each port.
+
+
 # v0.0.10
 
 #### Warning: This version changes the queue file format. Previous queue files will *not* be compatible with this version.

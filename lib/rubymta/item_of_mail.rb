@@ -76,7 +76,7 @@ class ItemOfMail < Hash
       end
       return true
     rescue => e
-      LOG.error(self[:mail_id]) {e.to_s}
+      LOG.error(self[:mail_id]) {e.inspect}
       e.backtrace.each { |line| LOG.error(self[:mail_id]) {line} }
       return false
     end
@@ -101,7 +101,7 @@ class ItemOfMail < Hash
       end
       self[:saved] = true
     rescue => e
-      LOG.error(self[:mail_id]) {e.to_s}
+      LOG.error(self[:mail_id]) {e.inspect}
       e.backtrace.each { |line| LOG.error(self[:mail_id]) {line} }
       return false
     end
@@ -135,7 +135,7 @@ class ItemOfMail < Hash
       item = ItemOfMail::new(mail)
       item[:data][:text] = b
     rescue => e
-      LOG.error(mail_id) {e.to_s}
+      LOG.error(mail_id) {e.inspect}
       e.backtrace.each { |line| LOG.error(mail_id) {line} }
     end
     return item
