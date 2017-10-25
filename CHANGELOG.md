@@ -1,3 +1,9 @@
+# v0.0.12
+
+* Fixed the `send_text` in `QueueRunner` to not echo the data into the log when `LogQueueRunnerConversation` is set to `true`.
+* Changed the text of the `-< (email message)` in Receiver to be `-> (data)` to match the QueueRunner class.
+
+
 # v0.0.11
 
 * Changed the STARTTLS to return a 500 error and continue processing. Before this change, it just erred out and closed the port with no feedback to the client. Because this error returns a 500 level error, the client is (ideally) expected to quit or restart the attempt from the beginning (at EHLO).

@@ -439,7 +439,7 @@ class Receiver
     body[:value] = value # this should be nil -- no argument on the DATA command
     body[:text] = lines = []
     send_text("354 Enter message, ending with \".\" on a line by itself")
-    LOG.info(@mail[:mail_id]) {" -> (email message)"} if LogReceiverConversation && !ShowIncomingData
+    LOG.info(@mail[:mail_id]) {" -> (data)"} if LogReceiverConversation && !ShowIncomingData
     while true
       text = recv_text(ShowIncomingData)
       if text.nil? # the  client closed the channel abruptly

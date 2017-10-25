@@ -27,7 +27,7 @@ gem build rubymta.gemspec
 sudo gem install rubymta
 
 
-gem build rubymta.gemspec; sudo gem uninstall rubymta; sudo gem install rubymta
+sudo gem uninstall rubymta; gem build rubymta.gemspec; sudo gem install rubymta
 
 
 # To start the server (in test mode and root)
@@ -76,7 +76,7 @@ git push -u origin master
 #----------------------------------------
 
 # To upload the gem to rubygems.org
-gem push rubymta-0.0.11.gem
+gem push rubymta-0.0.12.gem
 
 sudo gem install rubymta
 

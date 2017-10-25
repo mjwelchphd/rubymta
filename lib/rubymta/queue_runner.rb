@@ -27,11 +27,11 @@ class QueueRunner
     if text.class==Array
       text.each do |line|
         @connection.write(line+CRLF)
-        LOG.info(@mail_id) {"<-  %s"%text} if LogQueueRunnerConversation
+        LOG.info(@mail_id) {"<-  %s"%text} if LogQueueRunnerConversation && echo==:command
       end
     else
       @connection.write(text+CRLF)
-      LOG.info(@mail_id) {"<-  %s"%text} if LogQueueRunnerConversation
+      LOG.info(@mail_id) {"<-  %s"%text} if LogQueueRunnerConversation && echo==:command
     end
   end
 
