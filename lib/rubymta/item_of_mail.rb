@@ -1,5 +1,6 @@
 require_relative 'base-x'
 require_relative 'deepclone'
+require 'open3'
 require "./config" # config.rb is in user space
 
 class SaveError < StandardError; end
@@ -97,7 +98,10 @@ class ItemOfMail < Hash
         f.write("#{tmp.lines.count}\n")
         f.write(tmp)
         f.write("\n")
-        f.write(text.join("\n"))
+        text_out = text_in = text.join("\n")
+        text_out, e, s = Open3.capture3("spamc", :stdin_data=>text_in) if defined?(SpamAssassinInstalled)
+        LOG.error(self[:mail_id]) {e} unless e.empty?
+        f.write(text_out)
       end
       self[:saved] = true
     rescue => e

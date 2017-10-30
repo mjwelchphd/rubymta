@@ -1,3 +1,10 @@
+# v0.0.13
+
+* Removed code (by commenting it out) that saves partially received emails. I originally added it to help see what *exactly* spammers were sending that caused program faults. In my opinion, it's no longer needed.
+* Added code to call Spam Assassin just before saving. If you have spamassassin installed and you want to use it, add `
+  SpamAssassinInstalled = true` to your config.rb. (I added it in mine after `MailQueue` in `# item of mail configuration`.
+
+
 # v0.0.12
 
 * Fixed the `send_text` in `QueueRunner` to not echo the data into the log when `LogQueueRunnerConversation` is set to `true`.

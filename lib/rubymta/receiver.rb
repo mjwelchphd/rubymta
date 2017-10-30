@@ -246,6 +246,7 @@ class Receiver
     (LOG.info(@mail[:mail_id]) { "Received Mail:\n#{@mail.pretty_inspect}" }) if DumpMailIntoLog
 
   ensure
+=begin # this is debugging logic
     # make sure the incoming email is saved, in case there was a receive error;
     # otherwise, it gets saved just before the "250 OK" in the DATA section
     if @mail && !@mail[:saved]
@@ -259,6 +260,7 @@ class Receiver
         LOG.error(@mail[:mail_id]) {"#{ServerName} error: unable to save queue id=#{@mail[:mail_id]}"}
       end
     end
+=end
 
     # run the mail queue queue runner now, if it's not running already
     ok = nil
