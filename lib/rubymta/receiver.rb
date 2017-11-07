@@ -80,10 +80,10 @@ class Receiver
           when temp.nil?
             LOG.warn(@mail[:mail_id]) {"The client abruptly closed the connection"}
             text = nil
-          when !temp.valid_encoding?
-            LOG.warn(@mail[:mail_id]) {"The client sent non-UTF-8 text"}
-            send_text("500 5.5.1 non-UTF-8 text detected")
-            raise Quit
+#          when !temp.valid_encoding?
+#            LOG.warn(@mail[:mail_id]) {"The client sent non-UTF-8 text"}
+#            send_text("500 5.5.1 non-UTF-8 text detected")
+#            raise Quit
           else
             text = temp.chomp
           end
@@ -449,6 +449,11 @@ class Receiver
         break
       end
       break if text=="."
+#      if !text.valid_encoding?
+#        LOG.warn(@mail[:mail_id]) {"The client sent non-UTF-8 data"}
+#        send_text("500 5.5.1 non-UTF-8 data detected")
+#        raise Quit
+#      end
       lines << text
     end
 

@@ -1,3 +1,8 @@
+# v0.0.14
+
+* Took away the check for valid_encoding?, and added a call to convert any characters that are illegal in UTF-8 to '?' as the mail is being stored. This allows email from legacy email generators (that sometimes add strange characters) to still pass when they have illegal characters. It may break some DKIM checks, but that's unavoidable.
+
+
 # v0.0.13
 
 * Removed code (by commenting it out) that saves partially received emails. I originally added it to help see what *exactly* spammers were sending that caused program faults. In my opinion, it's no longer needed.

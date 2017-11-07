@@ -100,8 +100,7 @@ class ItemOfMail < Hash
         f.write("\n")
         text_out = text_in = text.join("\n")
         text_out, e, s = Open3.capture3("spamc", :stdin_data=>text_in) if defined?(SpamAssassinInstalled)
-        LOG.error(self[:mail_id]) {e} unless e.empty?
-        f.write(text_out)
+        f.write(text_out.utf8)
       end
       self[:saved] = true
     rescue => e
