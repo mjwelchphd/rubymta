@@ -177,7 +177,12 @@ class Server
       Process::fork do
         begin
           drop_root_privileges if !UserName.nil?
-          remote_hostname, remote_service = connection.io.remote_address.getnameinfo
+          begin
+            remote_hostname, remote_service = connection.io.remote_address.getnameinfo
+          rescue SocketError => e
+            LOG.info("%06d"%Process::pid) { e.to_s }
+            remote_hostname, remote_service = "(none)", nil
+          end
           remote_ip, remote_port = connection.io.remote_address.ip_unpack
           process_call(connection, local_port, remote_port.to_s, remote_ip, remote_hostname, remote_service)
           LOG.info("%06d"%Process::pid) {"Connection closed on port #{local_port} by #{ServerName}"}
