@@ -1,3 +1,10 @@
+# v0.0.15
+
+* Added a rescue for `Server::listening_thread`, at `getnameinfo` to catch errors where the IP address doesn't point to any DNS records. This error is ignored and `hostname` is set to `(none)`. No harm is done because the `hostname` is only used for log messages.
+* Fixed 3 small errors in `queue_runner`.
+* Changed the `Receiver.receive code to convert incomming text to UTF-8 rather than just test for it. A surprising number of emails will contain invalid codeset characters.
+
+
 # v0.0.14
 
 * Took away the check for valid_encoding?, and added a call to convert any characters that are illegal in UTF-8 to '?' as the mail is being stored. This allows email from legacy email generators (that sometimes add strange characters) to still pass when they have illegal characters. It may break some DKIM checks, but that's unavoidable.

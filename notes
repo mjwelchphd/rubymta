@@ -62,7 +62,7 @@ git config --list
 git remote add origin https://github.com/mjwelchphd/rubymta.git
 
 # UPDATE THE rubymta GEM SRC
-# CHANGE VERSION AND DATE 
+# CHANGE VERSION AND DATE
 # UPDATE CHANGELOG
 # UPDATE README
 # BUILD AND TEST THE GEM
@@ -70,13 +70,14 @@ git remote add origin https://github.com/mjwelchphd/rubymta.git
 #****************************************
 # PAY ATTENTION HERE:
 # BE SURE TO SAVE ALL FILES (like NOTES) #<------------- DON'T FORGET!
+# BUILD THE GEM ONE LAST TIME TO BE SURE ALL CHANGES (like version date) ARE INCLUDED
 # COMMIT CHANGES IN GIT BEFORE PUSHING!  #<------------- DON'T FORGET!
 git push -u origin master
 
 #----------------------------------------
 
 # To upload the gem to rubygems.org
-gem push rubymta-0.0.14.gem
+gem push rubymta-0.0.15.gem
 
 sudo gem install rubymta
 
@@ -458,28 +459,28 @@ end
 =end
 
 
-:default	
+:default
 The default value for the column.
 
-:index	
+:index
 Create an index on this column. If given a hash, use the hash as the options for the index.
 
-:null	
+:null
 Mark the column as allowing NULL values (if true), or not allowing NULL values (if false). If unspecified, will default to whatever the database default is.
 
-:primary_key	
+:primary_key
 Mark this column as the primary key. This is used instead of the primary key method if you want a non-autoincrementing primary key.
 
-:primary_key_constraint_name	
+:primary_key_constraint_name
 The name to give the primary key constraint.
 
-:type	
+:type
 Overrides the type given as the method name or a separate argument. Not usually used by column itself, but often by other methods such as primary_key or foreign_key.
 
-:unique	
+:unique
 Mark the column as unique, generally has the same effect as creating a unique index on the column.
 
-:unique_constraint_name	
+:unique_constraint_name
 The name to give the unique key constraint.
 
 
