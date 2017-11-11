@@ -80,12 +80,8 @@ class Receiver
           when temp.nil?
             LOG.warn(@mail[:mail_id]) {"The client abruptly closed the connection"}
             text = nil
-#          when !temp.valid_encoding?
-#            LOG.warn(@mail[:mail_id]) {"The client sent non-UTF-8 text"}
-#            send_text("500 5.5.1 non-UTF-8 text detected")
-#            raise Quit
           else
-            text = temp.chomp
+            text = temp.chomp.utf8
           end
         rescue Errno::ECONNRESET => e
           LOG.warn(@mail[:mail_id]) {"The client slammed the connection shut"}
@@ -246,22 +242,6 @@ class Receiver
     (LOG.info(@mail[:mail_id]) { "Received Mail:\n#{@mail.pretty_inspect}" }) if DumpMailIntoLog
 
   ensure
-=begin # this is debugging logic
-    # make sure the incoming email is saved, in case there was a receive error;
-    # otherwise, it gets saved just before the "250 OK" in the DATA section
-    if @mail && !@mail[:saved]
-      LOG.error(@mail[:mail_id]) {"#{@mail[:mail_id]} was not received completely. Saving the partial copy to queue."}
-
-      # the email is faulty--save for reference
-      case
-      when !@mail.insert_parcels
-        LOG.error(@mail[:mail_id]) {"#{ServerName} error: unable to save packet id=#{@mail[:mail_id]}"}
-      when !@mail.save_mail_into_queue_folder
-        LOG.error(@mail[:mail_id]) {"#{ServerName} error: unable to save queue id=#{@mail[:mail_id]}"}
-      end
-    end
-=end
-
     # run the mail queue queue runner now, if it's not running already
     ok = nil
     File.open(LockFilePath,"w") do |f|
@@ -449,11 +429,6 @@ class Receiver
         break
       end
       break if text=="."
-#      if !text.valid_encoding?
-#        LOG.warn(@mail[:mail_id]) {"The client sent non-UTF-8 data"}
-#        send_text("500 5.5.1 non-UTF-8 data detected")
-#        raise Quit
-#      end
       lines << text
     end
 
