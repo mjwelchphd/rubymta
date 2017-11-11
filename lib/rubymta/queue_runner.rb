@@ -213,7 +213,7 @@ class QueueRunner
 #  ~> To: Jones@xyz.com
 #  ~> From: John Q. Public <JQP@bar.com>
 #  ~> Subject: test Thu, 24 Nov 2016 12:22:39 -0800
-#  ~> 
+#  ~>
 #  ~> Bill:
 #  ~>  The next meeting of the board of directors will be
 #  ~>  on Tuesday.
@@ -276,7 +276,7 @@ class QueueRunner
     ok, lines = recv_text
     return mark_parcels(parcels, lines) if ok!='3'
 
-    LOG.info(@mail_id) {"<-  (data)"} if LogQueueRunnerConversation
+    LOG.info(@mail_id) {"<-  (data)"} if !LogQueueRunnerConversation
     mail[:data][:text].each do |line|
       send_text(line, :data)
     end
@@ -286,8 +286,8 @@ class QueueRunner
 
     # get one final message for all parcels (recipients)
     ok, lines = recv_text
+    ret = mark_parcels(parcels, lines)
     if ok=='2'
-      ret = mark_parcels(parcels, lines)
       LOG.info(@mail_id) {"Mail for #{parcels[0][:to_url]}, et.al. delivered remotely"}
     else
       LOG.info(@mail_id) {"Mail for #{parcels[0][:to_url]}, et.al. failed delivery remotely, #{lines.last}"}
@@ -315,7 +315,7 @@ class QueueRunner
 #  ~> To: Jones@xyz.com
 #  ~> From: John Q. Public <JQP@bar.com>
 #  ~> Subject: test Thu, 24 Nov 2016 12:22:39 -0800
-#  ~> 
+#  ~>
 #  ~> Bill:
 #  ~>  The next meeting of the board of directors will be
 #  ~>  on Tuesday.
@@ -374,8 +374,8 @@ class QueueRunner
     parcels.each do |parcel|
       # get the response from DoveCot
       ok, lines = recv_text
+      ret = mark_parcels([parcel], lines)
       if ok=='2'
-        ret = mark_parcels([parcel], lines)
         LOG.info(@mail_id) {"Mail for #{parcel[:to_url]} delivered locally"}
       else
         LOG.info(@mail_id) {"Mail for #{parcel[:to_url]} failed delivery locally, #{lines.last}"}
