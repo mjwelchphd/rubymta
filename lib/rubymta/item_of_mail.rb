@@ -111,6 +111,9 @@ class ItemOfMail < Hash
   end
 
   def self::retrieve_mail_from_queue_folder(mail_id)
+    m = mail_id.match(/^[0-9A-Za-z]{6}.[0-9A-Za-z]{6}.[0-9A-Za-z]{2}$/)
+    raise ArgumentError.new("*666* #{mail_id.inspect} is invalid") if m.nil?
+
     item = nil
     begin
       # Make sure the file that matches the parcel record exists
@@ -124,6 +127,10 @@ class ItemOfMail < Hash
       end
 
       tmp = nil; File::open("#{MailQueue}/#{mail_id}","r") { |f| tmp = f.read }
+      if tmp.nil?
+        LOG.error(mail_id) {"Failed to read data in 'ItemOfMail::retrieve_mail_from_queue_folder'"}
+      end
+
       data = tmp.split("\n")
 
       # get the number of lines in the hash, and cut that out first
@@ -132,7 +139,16 @@ class ItemOfMail < Hash
       b = data[n+1..-1]
 
       # convert the hash
+begin
       mail = eval(a.join("\n"))
+rescue => e
+  LOG.error(mail_id) {"--> X800X file=>'#{MailQueue}/#{mail_id}'"}
+  LOG.error(mail_id) {"--> X800X tmp.size=>#{tmp.size}, tmp.class=>#{tmp.class.name}"}
+  LOG.error(mail_id) {"--> X800X data.size=>#{data.size}, data.class=>#{data.class.name}"}
+  LOG.error(mail_id) {"--> X800X e=>#{e.inspect}"}
+  LOG.error(mail_id) {"--> X800X a=>#{a.inspect}"}
+  return nil
+end
 
       # create the ItemOfMail structure and insert the text
       item = ItemOfMail::new(mail)
