@@ -124,6 +124,11 @@ class QueueRunner
         begin
           ssl_socket = TCPSocket.open('localhost',LocalLMTPPort)
           @connection = OpenSSL::SSL::SSLSocket.new(ssl_socket, $ctx);
+          if defined?(SpamAssassinInstalled) && SpamAssassinInstalled
+            text = mail[:data][:text].join(CRLF)
+            text, e, s = Open3.capture3("spamc", :stdin_data=>text)
+            mail[:data][:text] = text.split(CRLF)
+          end
           lmtp_delivery('localhost',LocalLMTPPort,mail,domain,parcels)
           mail.update_parcels(parcels)
         rescue Errno::ECONNREFUSED => e

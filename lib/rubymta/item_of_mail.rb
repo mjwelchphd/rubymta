@@ -99,7 +99,6 @@ class ItemOfMail < Hash
         f.write(tmp)
         f.write("\n")
         text_out = text_in = text.join("\n")
-        text_out, e, s = Open3.capture3("spamc", :stdin_data=>text_in) if defined?(SpamAssassinInstalled)
         f.write(text_out.utf8)
       end
       self[:saved] = true

@@ -77,7 +77,7 @@ git push -u origin master
 #----------------------------------------
 
 # To upload the gem to rubygems.org
-gem push rubymta-0.0.15.gem
+gem push rubymta-0.0.16.gem
 
 sudo gem install rubymta
 
@@ -96,6 +96,19 @@ load './lib/rubymta.rb'
 
 
 #==========================================================================================
+
+
+#-----------
+grep -aF "New item" rubymta.log | nl | tail -n1
+grep -aF "nice guy" rubymta.log | nl | tail -n1
+grep -aF "use TLS" rubymta.log | nl | tail -n1
+grep -aF STARTTLS rubymta.log | nl | tail -n1
+grep -aF "Dovecot at" rubymta.log | nl | tail -n1
+#-----------
+grep -aF "/var/lib" rubymta.log | nl
+grep -aF X800X rubymta.log | nl | tail -n1
+#-----------
+
 
 gem build rubymta.gemspec; sudo gem uninstall rubymta; sudo gem install rubymta
 

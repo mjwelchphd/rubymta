@@ -1,3 +1,9 @@
+# v0.0.16
+
+* Removed the SpamAssassin check from the ItemOfMail class because I suspect Microsoft Outlook doesn't like the headers added by it.
+* Added the SpamAssassin check into QueueRunner class just before local delivery only.
+
+
 # v0.0.15
 
 * Added a rescue for `Server::listening_thread`, at `getnameinfo` to catch errors where the IP address doesn't point to any DNS records. This error is ignored and `hostname` is set to `(none)`. No harm is done because the `hostname` is only used for log messages.
