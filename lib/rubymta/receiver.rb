@@ -514,7 +514,10 @@ class Receiver
       return msg if !msg.nil?
     end
 
-    @level = 0
+    @level = 2 if @level>2
+    @mail.delete(:mailfrom)
+    @mail.delete(:rcptto)
+    @mail.delete(:data)
     return "250 2.0.0 Reset OK"
   end
 
