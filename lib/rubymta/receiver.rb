@@ -604,7 +604,7 @@ class Receiver
   def starttls(value)
     send_text("220 2.0.0 TLS go ahead")
     LOG.info(@mail[:mail_id]) {"<-> (handshake)"} if LogReceiverConversation
-    conn = @connection.clone # save the unencrypted connection in case of error
+    conn = @connection.deepclone # save the unencrypted connection in case of error
     begin
       @connection.accept
       @mail[:encrypted] = @encrypted = true

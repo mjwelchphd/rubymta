@@ -14,7 +14,7 @@ sudo usermod -a -G syslog czar-devel
 # (log out and back in to get the new group activated)
 sudo mkdir /var/log/rubymta
 sudo chmod 664 /var/log/rubymta
-sudo chown devel:devel /var/log/rubymta
+sudo chown czar-admin:czar-admin /var/log/rubymta
 
 #----------------------------------------
 
@@ -23,7 +23,7 @@ sudo chown devel:devel /var/log/rubymta
 # Otherwise, choose a place in the czar-devel home directory)
 sudo mkdir /run/rubymta
 sudo chmod 660 /run/rubymta
-sudo chown devel:devel /run/rubymta
+sudo chown czar-devel:czar-devel /run/rubymta
 
 #----------------------------------------
 
@@ -52,7 +52,7 @@ export MODE=dev
 #To run tests (with 'bacon' installed):
 # Configure spec/rubymta.rb
 # Be sure the RubyMTA is running
-bacon /home/devel/rubymta-gem/spec/rubymta.rb
+bacon /home/czar-devel/rubymta-gem/spec/rubymta.rb
 
 #----------------------------------------
 
@@ -83,7 +83,7 @@ git push -u origin master
 #----------------------------------------
 
 # To upload the gem to rubygems.org
-gem push rubymta-0.0.17.gem
+gem push rubymta-0.0.18.gem
 
 sudo gem install rubymta
 
@@ -450,8 +450,8 @@ create_table(:columns_types) do       # common database type used
   String :a4, :fixed=>true, :size=>50 # char(50)
   String :a5, :text=>true             # text
   File :b                             # blob
-  Fixnum :c                           # integer
-  Bignum :d                           # bigint
+  Integer :c                          # integer
+# Bignum :d                          # bigint -- depreciated in Ruby 2.4+
   Float :e                            # double precision
   BigDecimal :f                       # numeric
   BigDecimal :f2, :size=>10           # numeric(10)

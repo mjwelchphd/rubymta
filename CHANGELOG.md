@@ -1,3 +1,7 @@
+# v0.0.18
+
+* Changed Fixnum to Integer. Fixnum was depreciated in Ruby 2.4. Fixed a Ruby bug in newer Ruby releases which affects OpenSSL (https://bugs.ruby-lang.org/issues/13328)
+
 # v0.0.17
 
 * Changed the RSET command to reset the command sequence to the point between the STARTTLS and the MAIL FROM command. It also deletes any MAIL FROM, RCPT TO, and DATA from the incoming mail. A RSET command right after a EHLO, HELO, STARTTLS is the equivalent of a NOOP.

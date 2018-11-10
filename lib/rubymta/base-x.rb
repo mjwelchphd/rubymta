@@ -21,7 +21,7 @@ class String
 
 end
 
-class Fixnum
+class Integer
 
   # this is used to convert a number into segments of
   # base 62 (or 36) for use in creating email IDs
